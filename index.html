@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <link rel="shortcut icon" href="./icon/lc_fav_berry.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./events.js"></script>
+  <!-- <script src="./stats.js" defer></script> -->
+  <!-- <script src="./people.js" defer></script> -->
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <header>
+    <div>
+      <svg version="1.1"
+           width="710" height="150"
+           xmlns="http//www.w3.org/2000/svg">
+        <defs>
+          <filter
+            id="tFilter"
+            filterUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="710"
+            height="150">
+            <feGaussianBlur in="SourceBeta" stdDeviation="10" result="blur" />
+            <feOffset in="blur" dx="0" dy="0" result="offsetBlur" />
+            <feSpecularLighting
+              in="blur"
+              surfaceScale="10"
+              specularConstant="1.25"
+              specularExponent="13"
+              lighting-color="#ffffef"
+              result="specOut">
+              <fePointLight x="-12000" y="-13000" z="5000" />
+            </feSpecularLighting>
+            <feComposite
+              in="specOut"
+              in2="SourceAlpha"
+              operator="in"
+              result="specOut" />
+            <feComposite
+              in="SourceGraphic"
+              in2="specOut"
+              operator="arithmetic"
+              k1="0"
+              k2="1"
+              k3="3"
+              k4="0"
+              result="litPaint" />
+
+            <feMerge>
+              <feMergeNode in="offsetBlur" />
+              <feMergeNode in="litPaint" />
+            </feMerge>
+          </filter>
+        </defs>
+        <g filter="url(#tFilter)">
+          <text x="350" y="125" font-size="8rem" font-weight="bold"
+                text-anchor="middle" fill="#7f004f" stroke-width="0.75" stroke="#ffafcf">TicTacToe</text>
+        </g>
+      </svg>
+    </div>
+  </header>
+  <main>
+    <section id="players">
+      <form action="">
+        <fieldset>
+          <legend>Number Of Players</legend>
+          <label for="number-players">1
+            <input type="checkbox"
+                   name="number-players"
+                   id="number-players">2
+          </label>
+        </fieldset>
+        <label for="player1">1st Player's Name
+          <input type="text" id="player1" maxlength="24">
+        </label>
+        <label for="player2">2nd Player's Name
+          <input type="text" id="player2"  maxlength="24" disabled>
+        </label>
+      </form>
+    </section>
+    <section id="game-board">
+      <button type="button" id="b-1" value="1" disabled data-token=""></button>
+      <button type="button" id="b-2" value="2" disabled data-token="x">&#10005;</button>
+      <button type="button" id="b-3" value="3" disabled data-token=""></button>
+      <button type="button" id="b-4" value="4" disabled data-token="o">O</button>
+      <button type="button" id="b-5" value="5" disabled data-token=""></button>
+      <button type="button" id="b-6" value="6" disabled data-token=""></button>
+      <button type="button" id="b-7" value="7" disabled data-token=""></button>
+      <button type="button" id="b-8" value="8" disabled data-token=""></button>
+      <button type="button" id="b-9" value="9" disabled data-token=""></button>
+    </section>
+    <section id="ai">
+      <form action="">
+        <fieldset id="difficulty-level">
+          <legend>Difficulty Level</legend>
+          <input type="radio" id="rainbow" name="level" value="0" checked>
+          <label for="rainbow">Rainbow-Unicorn</label>
+          <input type="radio" id="nightmare" name="level" value="1">
+          <label for="nightmare">Nightmare</label>
+          <input type="radio" id="hell" name="level" value="2">
+          <label for="hell">Hell</label>
+        </fieldset>
+        <fieldset id="game-mode">
+          <legend>Game Mode</legend>
+          <input type="radio" id="always" name="first-move" value="0">
+          <label for="always">Always 1st Move</label>
+          <input type="radio" id="alternately" name="first-move" value="1" checked>
+          <label for="alternately">Alternately 1st Move</label>
+          <input type="radio" id="never" name="first-move" value="2">
+          <label for="never">Never 1st Move</label>
+        </fieldset>
+      </form>
+    </section>
+  </main>
+  <footer>
+    <p>head&copy;rafted 2023 by <a href="https://github.com/LastCapricorn">Last Capricorn</a></p>
+  </footer>
+</body>
+</html>

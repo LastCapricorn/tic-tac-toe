@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Megrim&display=swap');
+
+:root {
+
+}
+html {
+  box-sizing: border-box;
+  font-size: 18px;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+body {
+  width: 100vw;
+  height: 100vh;
+  background-color: #121224;
+  color: #ffbfdf;
+  font-family: "Megrim", Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-flow: column;
+}
+header,
+main,
+footer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  width: 100%;
+}
+header > div {
+  width: 100%;
+  margin: 0 auto;
+}
+svg {
+  display: block;
+  margin: 0 auto;
+}
+
+main {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-items: space-between;
+}
+#players {
+  flex: 1 1 auto;
+}
+#players form > label,
+#players form > label input {
+  display: block;
+}
+
+#game-board {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 1.0rem
+}
+#game-board button {
+  width: 8.0rem;
+  height: 8.0rem;
+  font-size: 6.0rem;
+  background-color: #242448;
+  border: 5px inset #444468;
+  cursor: pointer;
+}
+#game-board button:disabled {
+  background-color: #1f1f1f2f;
+  border: 4px inset #1f1f1f2f;
+  color: #7f7f7f4f;
+  cursor: default;
+}
+
+#game-board button:not([disabled]):hover {
+  background-color: #646488;
+}
+
+#game-board button:not([disabled])[data-token='x'] {
+  color: #cfefff;
+  text-shadow: 3px 3px 2px #2f4f8f;
+}
+#game-board button:not([disabled])[data-token='o'] {
+  color: #ffdfef;
+  text-shadow: 3px 3px 2px #8f2f4f;
+}
+
+#ai {
+  flex: 1 1 auto;
+}
+#ai form fieldset {
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+
+footer {
+  margin: auto 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+footer p {
+  text-align: center;
+}
+footer a:link {
+  color: #ffdf7f;
+  text-underline-offset: 0.25rem;
+}
+footer a:visited {
+  color: #ffbfdf;
+}
+footer a:hover {
+  color: #bf3f9f;
+}
