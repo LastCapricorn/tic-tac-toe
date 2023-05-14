@@ -5,9 +5,9 @@ const ticTacToe = ( () => {
   const inputNumberOfPlayers = document.querySelector('#number-players')
   const inputNamePlayerOne = document.querySelector('#player1')
   const inputNamePlayerTwo = document.querySelector('#player2')
-  const fieldButtons = document.querySelectorAll('button[id^="b"]')
+  const fieldButtons = document.querySelectorAll('#game-board button')
   const difficultyLevel = document.querySelector('#difficulty-level')
-  const gameMode = document.querySelector('#game-mode')
+  const firstMoveMode = document.querySelector('#move-mode')
   const inputLevel = document.querySelectorAll('input[name="level"]')
   const inputMove = document.querySelectorAll('input[name="first-move"]')
 
@@ -17,13 +17,41 @@ const ticTacToe = ( () => {
   inputNamePlayerTwo.addEventListener('change', setPlayer)
   fieldButtons.forEach( (button) => button.addEventListener('click', setToken))
   inputLevel.forEach( (radio) => radio.addEventListener('change', changeLevel))
-  inputMove.forEach( (radio) => radio.addEventListener('change', changeMove))
+  inputMove.forEach( (radio) => radio.addEventListener('change', changeMoveMode))
+
+  // factories
+  const player = (name) => {
+    function playToken(x, y) {
+      console.log(`${this.name} sets ${this.token} on field ${x}/${y}.`)
+    }
+    return { name, playToken }
+  }
+
+  const field = (number) => {
+    const _id = 'b-' + number
+    let _state = ''
+    function setState(state) {
+      _state = state
+      events.emit('stateChanged', _state)
+    }
+    function getState() {
+      return _state
+    }
+    function getId() {
+      return _id
+    }
+    return { number, setState, getState, getId }
+  }
 
   // sub modules
   const game = (() => {
     let _singlePlayer = true
     let _gameLevel = 0
-    let _gameMode = 1
+    let _moveMode = 1
+    let moves = 9
+    let playerIsFirst = true
+    let token = 'X'
+    let isWon = false
     let _playerOne = {}
     let _playerTwo = {}
 
@@ -35,8 +63,8 @@ const ticTacToe = ( () => {
       _gameLevel = level
     }
 
-    const setGameMode = function(mode) {
-      _gameMode = mode
+    const setMoveMode = function(mode) {
+      _moveMode = mode
     }
 
     const setPlayerObject = function(obj, id) {
@@ -50,55 +78,73 @@ const ticTacToe = ( () => {
     const start = function() {
       fieldButtons.forEach( (button) => {
         button.textContent = ''
-        button.removeAttribute('disabled')})
+        button.removeAttribute('disabled')
+      })
     }
 
     const end = function() {
-      fieldButtons.forEach( (button) => button.setAttribute('disabled', ''))
+      fieldButtons.forEach( (button) => {
+        button.setAttribute('disabled', '')
+        button.dataset.token = ''
+        gameBoard.forEach( (field) => field.setState(''))
+        moves = 9
+        isWon = false
+      })
+
     }
 
-    return { setSinglePlayer, setGameLevel, setGameMode, setPlayerObject, getPlayer, start, end }
+    const play = function() {
+        moves--
+        game.token = game.token === 'X' ? 'O' : 'X'
+        isWon = checkForWin()
+        if (moves === 0 || isWon) {
+          if (!isWon) {
+            console.log("It's a draw!")
+          } else {
+            console.log(isWon.player)
+          }
+          game.end()
+        }
+    }
+
+    return { setSinglePlayer,
+             setGameLevel,
+             setMoveMode,
+             setPlayerObject,
+             getPlayer,
+             start,
+             end,
+             play,
+             token }
   })()
 
-  // factories
-  const player = (name) => {
-    function playToken(x, y) {
-      console.log(`${this.name} sets ${this.token} on field ${x}/${y}.`)
+  const gameBoard = []
+  const createGameBoard = ((arr)=>{
+    for (let i = 1; i <= 9; i++) {
+      arr.push(field(i))
     }
-    return { name, playToken }
-  }
-
-  const field = (number) => {
-    const _id = 'b-' + number
-    const _x = boardFields[number].x
-    const _y = boardFields[number].y
-    let _state = '-'
-    function setState(state) {
-      _state = state
-      events.emit('stateChanged', _state)
-    }
-    function getState() {
-      return this._state
-    }
-    return { number, setState, getState }
-  }
+  })(gameBoard)
 
   // functions
   function togglePlayerMode() {
     game.setSinglePlayer(!this.checked)
     if (this.checked) {
       inputNamePlayerTwo.removeAttribute('disabled')
+      difficultyLevel.setAttribute('disabled', '')
+      firstMoveMode.setAttribute('disabled', '')
     } else {
       inputNamePlayerTwo.setAttribute('disabled', '')
+      difficultyLevel.removeAttribute('disabled')
+      firstMoveMode.removeAttribute('disabled')
     }
   }
 
   function changeLevel() {
-    game.setGameLevel(this.value)
+    game.setGameLevel(this.checked ? 1 : 0)
   }
 
-  function changeMove(ev) {
-    game.setGameMode(this.value)
+  function changeMoveMode() {
+    game.setMoveMode(this.value)
   }
 
   function setPlayer() {
@@ -111,88 +157,32 @@ const ticTacToe = ( () => {
     }
   }
 
-  function setToken(ev) {
-    console.log(ev)
-    console.log(this)
+  function setToken() {
+    gameBoard[this.value - 1].setState(game.token)
+    this.dataset.token = game.token
+    this.textContent = game.token
+    game.play()
   }
 
-  const gameBoard = ( () => {
-    return [['-', '-', '-'], ['-', '-', '-'], ['-', '-', '-']]
-  })()
-
-  const boardFields = [
-    { x: 0, y: 0 },
-    { x: 0, y: 1 },
-    { x: 0, y: 2 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 },
-    { x: 1, y: 2 },
-    { x: 2, y: 0 },
-    { x: 2, y: 1 },
-    { x: 2, y: 2 } ]
-
   const winLines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
     [1, 4, 7],
     [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+    [3, 6, 9],
+    [1, 5, 9],
+    [3, 5, 7]
   ]
 
-  const checkForWin = function(gameboard) {
+  const checkForWin = function() {
     for (let i = 0; i < winLines.length; i++) {
-      if (winLines[i].every( field => gameboard[boardFields[field].x][boardFields[field].y] === 'X') ||
-          winLines[i].every( field => gameboard[boardFields[field].x][boardFields[field].y] === 'O')) {
-        return { line: winLines[i], player: gameboard[boardFields[i].x][boardFields[i].y] }
+      if (winLines[i].every( field => gameBoard[field-1].getState() === 'X') ||
+          winLines[i].every( field => gameBoard[field-1].getState() === 'O')) {
+        return { line: winLines[i], player:gameBoard[winLines[i][0]-1].getState() }
       }
     }
   }
 
-  return { game, gameBoard, player, checkForWin, boardFields, winLines }
+  return { game }
 })()
-
-// const gameboard = ticTacToe.gameBoard
-// console.log(gameboard)
-// const player1 = ticTacToe.player('Oli', 'X')
-// const player2 = ticTacToe.player('Compi', 'O')
-// let e
-// console.log({player1, player2})
-// player1.playToken(0,2)
-// gameboard[0][2] = 'X'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player2.playToken(1,1)
-// gameboard[1][1] = 'O'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player1.playToken(2,0)
-// gameboard[2][0] = 'X'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player2.playToken(0,0)
-// gameboard[0][0] = 'O'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player1.playToken(2,2)
-// gameboard[2][2] = 'X'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player2.playToken(2,1)
-// gameboard[2][1] = 'O'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// player1.playToken(1,2)
-// gameboard[1][2] = 'X'
-// e = ticTacToe.checkForWin(gameboard)
-// console.log('Ergebnis: ', e)
-
-// console.log(gameboard)

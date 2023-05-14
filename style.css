@@ -57,7 +57,7 @@ main {
 }
 
 #game-board {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
@@ -72,9 +72,7 @@ main {
   cursor: pointer;
 }
 #game-board button:disabled {
-  background-color: #1f1f1f2f;
-  border: 4px inset #1f1f1f2f;
-  color: #7f7f7f4f;
+  opacity: 0.25;
   cursor: default;
 }
 
@@ -82,11 +80,11 @@ main {
   background-color: #646488;
 }
 
-#game-board button:not([disabled])[data-token='x'] {
+#game-board button:not([disabled])[data-token='X'] {
   color: #cfefff;
   text-shadow: 3px 3px 2px #2f4f8f;
 }
-#game-board button:not([disabled])[data-token='o'] {
+#game-board button:not([disabled])[data-token='O'] {
   color: #ffdfef;
   text-shadow: 3px 3px 2px #8f2f4f;
 }
@@ -94,10 +92,22 @@ main {
 #ai {
   flex: 1 1 auto;
 }
-#ai form fieldset {
+#difficulty-level,
+#move-mode {
   display: grid;
   grid-template-columns: min-content 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  transition: opacity 500ms ease-out;
+}
+#difficulty-level:disabled,
+#move-mode:disabled {
+  opacity: 0.25;
+}
+#difficulty-level input{
+  grid-row: 1 / 3;
+}
+#difficulty-level label{
+  grid-column: 2;
 }
 
 footer {

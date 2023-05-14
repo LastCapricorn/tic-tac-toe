@@ -86,9 +86,9 @@
     </section>
     <section id="game-board">
       <button type="button" id="b-1" value="1" disabled data-token=""></button>
-      <button type="button" id="b-2" value="2" disabled data-token="x">&#10005;</button>
+      <button type="button" id="b-2" value="2" disabled data-token=""></button>
       <button type="button" id="b-3" value="3" disabled data-token=""></button>
-      <button type="button" id="b-4" value="4" disabled data-token="o">O</button>
+      <button type="button" id="b-4" value="4" disabled data-token=""></button>
       <button type="button" id="b-5" value="5" disabled data-token=""></button>
       <button type="button" id="b-6" value="6" disabled data-token=""></button>
       <button type="button" id="b-7" value="7" disabled data-token=""></button>
@@ -99,21 +99,18 @@
       <form action="">
         <fieldset id="difficulty-level">
           <legend>Difficulty Level</legend>
-          <input type="radio" id="rainbow" name="level" value="0" checked>
-          <label for="rainbow">Rainbow-Unicorn</label>
-          <input type="radio" id="nightmare" name="level" value="1">
-          <label for="nightmare">Nightmare</label>
-          <input type="radio" id="hell" name="level" value="2">
-          <label for="hell">Hell</label>
+          <input type="checkbox" id="difficulty" name="level">
+          <label for="difficulty">Rainbow-Unicorn</label>
+          <label for="difficulty">Nightmare</label>
         </fieldset>
-        <fieldset id="game-mode">
-          <legend>Game Mode</legend>
+        <fieldset id="move-mode">
+          <legend>1st Move</legend>
           <input type="radio" id="always" name="first-move" value="0">
-          <label for="always">Always 1st Move</label>
-          <input type="radio" id="alternately" name="first-move" value="1" checked>
-          <label for="alternately">Alternately 1st Move</label>
+          <label for="always">Always</label>
+          <input type="radio" id="alternate" name="first-move" value="1" checked>
+          <label for="alternate">Alternate</label>
           <input type="radio" id="never" name="first-move" value="2">
-          <label for="never">Never 1st Move</label>
+          <label for="never">Never</label>
         </fieldset>
       </form>
     </section>
