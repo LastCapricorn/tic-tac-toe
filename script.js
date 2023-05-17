@@ -10,15 +10,18 @@ const ticTacToe = ( () => {
   const firstMoveMode = document.querySelector('#move-mode')
   const inputLevel = document.querySelectorAll('input[name="level"]')
   const inputMove = document.querySelectorAll('input[name="first-move"]')
+  const settingsPanel = document.querySelector('nav')
+  const panelToggler = document.querySelector('#toggler')
 
   // bind Events
+
   inputNumberOfPlayers.addEventListener('click', togglePlayerMode)
   inputNamePlayerOne.addEventListener('change', setPlayer)
   inputNamePlayerTwo.addEventListener('change', setPlayer)
   fieldButtons.forEach( (button) => button.addEventListener('click', setToken))
   inputLevel.forEach( (radio) => radio.addEventListener('change', changeLevel))
   inputMove.forEach( (radio) => radio.addEventListener('change', changeMoveMode))
-
+  panelToggler.addEventListener('click', toggleSettings)
   // factories
   const player = (name) => {
     function playToken(x, y) {
@@ -32,7 +35,6 @@ const ticTacToe = ( () => {
     let _state = ''
     function setState(state) {
       _state = state
-      events.emit('stateChanged', _state)
     }
     function getState() {
       return _state
@@ -86,10 +88,13 @@ const ticTacToe = ( () => {
       fieldButtons.forEach( (button) => {
         button.setAttribute('disabled', '')
         button.dataset.token = ''
-        gameBoard.forEach( (field) => field.setState(''))
-        moves = 9
-        isWon = false
       })
+      gameBoard.forEach( (field) => field.setState(''))
+      winLines.forEach( (line) => {
+        Object.keys(line).forEach( (key) => (line[key] = ''))
+      })
+      moves = 9
+      isWon = false
 
     }
 
@@ -126,6 +131,12 @@ const ticTacToe = ( () => {
   })(gameBoard)
 
   // functions
+  function toggleSettings() {
+    settingsPanel.classList.toggle('open')
+    panelToggler.textContent =
+      settingsPanel.classList.contains('open') ? '\u25b2' : '\u25bc'
+  }
+
   function togglePlayerMode() {
     game.setSinglePlayer(!this.checked)
     if (this.checked) {
@@ -159,27 +170,32 @@ const ticTacToe = ( () => {
 
   function setToken() {
     gameBoard[this.value - 1].setState(game.token)
+    winLines.forEach( (line) => {
+      if(Object.hasOwnProperty.call(line, this.value)) {
+        line[this.value] = game.token
+      }
+    })
     this.dataset.token = game.token
     this.textContent = game.token
     game.play()
   }
 
-  const winLines = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9],
-    [1, 4, 7],
-    [2, 5, 8],
-    [3, 6, 9],
-    [1, 5, 9],
-    [3, 5, 7]
+  const winLines = [ {1: '', 2: '', 3: ''},
+                     {4: '', 5: '', 6: ''},
+                     {7: '', 8: '', 9: ''},
+                     {1: '', 4: '', 7: ''},
+                     {2: '', 5: '', 8: ''},
+                     {3: '', 6: '', 9: ''},
+                     {1: '', 5: '', 9: ''},
+                     {3: '', 5: '', 7: ''}
   ]
 
   const checkForWin = function() {
-    for (let i = 0; i < winLines.length; i++) {
-      if (winLines[i].every( field => gameBoard[field-1].getState() === 'X') ||
-          winLines[i].every( field => gameBoard[field-1].getState() === 'O')) {
-        return { line: winLines[i], player:gameBoard[winLines[i][0]-1].getState() }
+    for (let line, i = 0; i < winLines.length; i++) {
+      line = Object.getOwnPropertyNames(winLines[i])
+      if (line.every( prop => winLines[i][prop] === 'X') ||
+          line.every( prop => winLines[i][prop] === 'O')) {
+        return { line: winLines[i], player: Object.values(winLines[i])[0] }
       }
     }
   }

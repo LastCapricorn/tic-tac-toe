@@ -7,9 +7,6 @@
   <title>Tic Tac Toe</title>
   <link rel="shortcut icon" href="./icon/lc_fav_berry.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
-  <script src="./events.js"></script>
-  <!-- <script src="./stats.js" defer></script> -->
-  <!-- <script src="./people.js" defer></script> -->
   <script src="./script.js" defer></script>
 </head>
 <body>
@@ -59,60 +56,88 @@
           </filter>
         </defs>
         <g filter="url(#tFilter)">
-          <text x="350" y="125" font-size="8rem" font-weight="bold"
-                text-anchor="middle" fill="#7f004f" stroke-width="0.75" stroke="#ffafcf">TicTacToe</text>
+          <text x="50%" y="85%" font-size="800%" font-weight="bold"
+                text-anchor="middle" fill="var(--svgfill)" stroke-width="0.75" stroke="var(--svgstroke)">TicTacToe</text>
         </g>
       </svg>
     </div>
   </header>
+  <nav class="">
+    <form action="" id="players">
+      <fieldset>
+        <legend>Number Of Players</legend>
+        <label for="number-players">1
+          <input type="checkbox"
+                 name="number-players"
+                 id="number-players">2
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Player Names</legend>
+        <label for="player1">1st Player's Name</label>
+        <input type="text"
+               id="player1"
+               maxlength="24">
+        <label for="player2">2nd Player's Name</label>
+        <input type="text"
+               id="player2"
+               maxlength="24"
+               disabled>
+      </fieldset>
+    </form>
+    <form action="" id="ai">
+      <fieldset id="difficulty-level">
+        <legend>Difficulty Level</legend>
+        <input type="checkbox"
+               id="difficulty"
+               name="level">
+        <label for="difficulty">Rainbow-Unicorn</label>
+        <label for="difficulty">NightMare</label>
+      </fieldset>
+      <fieldset id="move-mode">
+        <legend>1st Move</legend>
+        <input type="radio"
+               id="always"
+               name="first-move"
+               value="0">
+        <label for="always">Always</label>
+        <input type="radio"
+               id="alternate"
+               name="first-move"
+               value="1"
+               checked>
+        <label for="alternate">Alternate</label>
+        <input type="radio"
+               id="never"
+               name="first-move"
+               value="2">
+        <label for="never">Never</label>
+      </fieldset>
+    </form>
+    <button id="toggler">&#x25b2;</button>
+  </nav>
   <main>
-    <section id="players">
-      <form action="">
-        <fieldset>
-          <legend>Number Of Players</legend>
-          <label for="number-players">1
-            <input type="checkbox"
-                   name="number-players"
-                   id="number-players">2
-          </label>
-        </fieldset>
-        <label for="player1">1st Player's Name
-          <input type="text" id="player1" maxlength="24">
-        </label>
-        <label for="player2">2nd Player's Name
-          <input type="text" id="player2"  maxlength="24" disabled>
-        </label>
-      </form>
+    <section id="scoring">
+      <div id="score-p1">
+        <p>Anonymous</p>
+        <p>0</p>
+      </div>
+      <div id="score-p2">
+        <p>Incognito</p>
+        <p>0</p>
+      </div>
+      <div id="message">Anonymous, it's your turn</div>
     </section>
     <section id="game-board">
-      <button type="button" id="b-1" value="1" disabled data-token=""></button>
-      <button type="button" id="b-2" value="2" disabled data-token=""></button>
-      <button type="button" id="b-3" value="3" disabled data-token=""></button>
-      <button type="button" id="b-4" value="4" disabled data-token=""></button>
-      <button type="button" id="b-5" value="5" disabled data-token=""></button>
-      <button type="button" id="b-6" value="6" disabled data-token=""></button>
-      <button type="button" id="b-7" value="7" disabled data-token=""></button>
-      <button type="button" id="b-8" value="8" disabled data-token=""></button>
-      <button type="button" id="b-9" value="9" disabled data-token=""></button>
-    </section>
-    <section id="ai">
-      <form action="">
-        <fieldset id="difficulty-level">
-          <legend>Difficulty Level</legend>
-          <input type="checkbox" id="difficulty" name="level">
-          <label for="difficulty">Rainbow-Unicorn</label>
-          <label for="difficulty">Nightmare</label>
-        </fieldset>
-        <fieldset id="move-mode">
-          <legend>1st Move</legend>
-          <input type="radio" id="always" name="first-move" value="0">
-          <label for="always">Always</label>
-          <input type="radio" id="alternate" name="first-move" value="1" checked>
-          <label for="alternate">Alternate</label>
-          <input type="radio" id="never" name="first-move" value="2">
-          <label for="never">Never</label>
-        </fieldset>
-      </form>
+      <button type="button" id="b-1" value="1" data-token=""></button>
+      <button type="button" id="b-2" value="2" data-token=""></button>
+      <button type="button" id="b-3" value="3" data-token=""></button>
+      <button type="button" id="b-4" value="4" data-token=""></button>
+      <button type="button" id="b-5" value="5" data-token=""></button>
+      <button type="button" id="b-6" value="6" data-token=""></button>
+      <button type="button" id="b-7" value="7" data-token=""></button>
+      <button type="button" id="b-8" value="8" data-token=""></button>
+      <button type="button" id="b-9" value="9" data-token=""></button>
     </section>
   </main>
   <footer>
