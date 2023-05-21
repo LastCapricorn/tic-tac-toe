@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Megrim&display=swap');
 
 :root {
+  --fontsize: 2.0rem;
   --svgfill: #7f004f;
   --svgstroke: #ff8faf;
   --col00: #020214;
@@ -208,7 +209,7 @@ input {
   grid-column: 2 / 3;
   align-self: center;
 }
-#difficulty {
+#level {
   position: relative;
   grid-row: 1 / 3;
   align-self: center;
@@ -218,7 +219,7 @@ input {
   margin: 0 0.5rem;
   border: 2px inset var(--col01)
 }
-#difficulty::before {
+#level::before {
   position: absolute;
   top: 0.6rem;
   left: 0.65rem;
@@ -228,7 +229,7 @@ input {
   background-color: var(--col00);
   border: 2px inset var(--col01) ;
 }
-#difficulty::after {
+#level::after {
   position: absolute;
   content: "\1f984";
   top: 0.05rem;
@@ -243,15 +244,15 @@ input {
   font-size: 1.0rem;
   transition: all 500ms ease;
 }
-#difficulty:checked::after {
+#level:checked::after {
   transform: translateY(3.15rem);
   content: "\1f47b";
   box-shadow: 0 -6px 4px var(--col00);
 }
-#move-mode {
+#mode {
   padding: 0 0.5rem;
 }
-#move-mode input {
+#mode input {
   position: relative;
   appearance: none;
   width: 1.4rem;
@@ -260,7 +261,7 @@ input {
   border: 2px inset var(--col01);
   border-radius: 50%;
 }
-#move-mode input:checked::after {
+#mode input:checked::after {
   position: absolute;
   top: -2px;
   left: -2px;
@@ -302,14 +303,14 @@ main {
   font-size: 2.0rem;
   margin-bottom: 2.0rem;
 }
-#score-p1,
-#score-p2,
+.scoring,
 #message {
   border: 2px inset var(--col03);
 }
 #message {
   grid-column: 1 / 3;
   font-style: italic;
+  color: var(--col10);
 }
 #game-board {
   justify-self: center;
@@ -365,6 +366,31 @@ footer a:hover {
   color: var(--col12);
 }
 
+.modal {
+  width: 16.0rem;
+  height: 10.0rem;
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  z-index: 1;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fontsize);
+  font-weight: bold;
+  background-color: var(--svgfill);
+  color: var(--col10);
+  border: 1px solid var(--col05);
+  border-radius: 50%;
+  box-shadow: 0 0 4.0rem 1.0rem var(--col10),
+       inset -4px -4px 1.0rem var(--col10);
+  transform: scale(0%);
+  transition: all 500ms ease-in-out;
+}
+.modal.show {
+  top: 50%;
+  left: calc(50% - 8.0rem);
+  transform: scale(100%);
+            }
 @media screen and (max-width: 959px) {
   nav,
   #players,

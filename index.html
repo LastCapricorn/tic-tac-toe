@@ -69,7 +69,8 @@
         <label for="number-players">1
           <input type="checkbox"
                  name="number-players"
-                 id="number-players">2
+                 id="number-players"
+                 checked>2
         </label>
       </fieldset>
       <fieldset>
@@ -81,20 +82,19 @@
         <label for="player2">2nd Player's Name</label>
         <input type="text"
                id="player2"
-               maxlength="24"
-               disabled>
+               maxlength="24">
       </fieldset>
     </form>
     <form action="" id="ai">
-      <fieldset id="difficulty-level">
+      <fieldset id="difficulty" disabled>
         <legend>Difficulty Level</legend>
         <input type="checkbox"
-               id="difficulty"
+               id="level"
                name="level">
-        <label for="difficulty">Rainbow-Unicorn</label>
-        <label for="difficulty">NightMare</label>
+        <label for="level">Rainbow-Unicorn</label>
+        <label for="level">NightMare</label>
       </fieldset>
-      <fieldset id="move-mode">
+      <fieldset id="mode" disabled>
         <legend>1st Move</legend>
         <input type="radio"
                id="always"
@@ -114,31 +114,32 @@
         <label for="never">Never</label>
       </fieldset>
     </form>
-    <button id="toggler">&#x25b2;</button>
+    <button id="toggler">&#x25bc;</button>
   </nav>
   <main>
     <section id="scoring">
-      <div id="score-p1">
-        <p>Anonymous</p>
-        <p>0</p>
+      <div class="scoring p1">
+        <p class="name"></p>
+        <p class="score"></p>
       </div>
-      <div id="score-p2">
-        <p>Incognito</p>
-        <p>0</p>
+      <div class="scoring p2">
+        <p class="name"></p>
+        <p class="score"></p>
       </div>
-      <div id="message">Anonymous, it's your turn</div>
+      <div id="message"></div>
     </section>
     <section id="game-board">
-      <button type="button" id="b-1" value="1" data-token=""></button>
-      <button type="button" id="b-2" value="2" data-token=""></button>
-      <button type="button" id="b-3" value="3" data-token=""></button>
-      <button type="button" id="b-4" value="4" data-token=""></button>
-      <button type="button" id="b-5" value="5" data-token=""></button>
-      <button type="button" id="b-6" value="6" data-token=""></button>
-      <button type="button" id="b-7" value="7" data-token=""></button>
-      <button type="button" id="b-8" value="8" data-token=""></button>
-      <button type="button" id="b-9" value="9" data-token=""></button>
+      <button type="button" value="1" data-token=""></button>
+      <button type="button" value="2" data-token=""></button>
+      <button type="button" value="3" data-token=""></button>
+      <button type="button" value="4" data-token=""></button>
+      <button type="button" value="5" data-token=""></button>
+      <button type="button" value="6" data-token=""></button>
+      <button type="button" value="7" data-token=""></button>
+      <button type="button" value="8" data-token=""></button>
+      <button type="button" value="9" data-token=""></button>
     </section>
+    <button class="modal"></button>
   </main>
   <footer>
     <p>head&copy;rafted 2023 by <a href="https://github.com/LastCapricorn">Last Capricorn</a></p>

@@ -1,37 +1,32 @@
 const ticTacToe = ( () => {
   'use strict'
 
-  // cache DOM
+  // DOM access
+  const gameField = document.querySelector('#game-board')
+  const fieldButtons = gameField.querySelectorAll('#game-board button')
+  const settingsPanel = document.querySelector('nav')
+  const panelButton = document.querySelector('#toggler')
   const inputNumberOfPlayers = document.querySelector('#number-players')
   const inputNamePlayerOne = document.querySelector('#player1')
   const inputNamePlayerTwo = document.querySelector('#player2')
-  const fieldButtons = document.querySelectorAll('#game-board button')
-  const difficultyLevel = document.querySelector('#difficulty-level')
-  const firstMoveMode = document.querySelector('#move-mode')
-  const inputLevel = document.querySelectorAll('input[name="level"]')
-  const inputMove = document.querySelectorAll('input[name="first-move"]')
-  const settingsPanel = document.querySelector('nav')
-  const panelToggler = document.querySelector('#toggler')
+  const levelFieldset = document.querySelector('#difficulty')
+  const moveFieldset = document.querySelector('#mode')
+  const inputLevel = document.querySelector('#level')
+  const inputMove = document.querySelectorAll('#mode input')
+  const displayP1Name = document.querySelector('.scoring.p1 .name')
+  const displayP1Score = document.querySelector('.scoring.p1 .score')
+  const displayP2Name = document.querySelector('.scoring.p2 .name')
+  const displayP2Score = document.querySelector('.scoring.p2 .score')
+  const displayMessage = document.querySelector('#message')
+  const modalButton = document.querySelector('.modal')
 
-  // bind Events
-
-  inputNumberOfPlayers.addEventListener('click', togglePlayerMode)
-  inputNamePlayerOne.addEventListener('change', setPlayer)
-  inputNamePlayerTwo.addEventListener('change', setPlayer)
-  fieldButtons.forEach( (button) => button.addEventListener('click', setToken))
-  inputLevel.forEach( (radio) => radio.addEventListener('change', changeLevel))
-  inputMove.forEach( (radio) => radio.addEventListener('change', changeMoveMode))
-  panelToggler.addEventListener('click', toggleSettings)
-  // factories
-  const player = (name) => {
-    function playToken(x, y) {
-      console.log(`${this.name} sets ${this.token} on field ${x}/${y}.`)
-    }
-    return { name, playToken }
+  // Factories
+  const player = (id, name, token) => {
+    const score = 0
+    return { id, name, token, score }
   }
 
   const field = (number) => {
-    const _id = 'b-' + number
     let _state = ''
     function setState(state) {
       _state = state
@@ -39,88 +34,61 @@ const ticTacToe = ( () => {
     function getState() {
       return _state
     }
-    function getId() {
-      return _id
-    }
-    return { number, setState, getState, getId }
+    return { number, setState, getState }
   }
 
-  // sub modules
-  const game = (() => {
-    let _singlePlayer = true
-    let _gameLevel = 0
-    let _moveMode = 1
-    let moves = 9
-    let playerIsFirst = true
-    let token = 'X'
-    let isWon = false
-    let _playerOne = {}
-    let _playerTwo = {}
+  // Modules
+  const events = {
+    events: {},
 
-    const setSinglePlayer = function(bool) {
-      _singlePlayer = bool
-    }
-
-    const setGameLevel = function(level) {
-      _gameLevel = level
-    }
-
-    const setMoveMode = function(mode) {
-      _moveMode = mode
-    }
-
-    const setPlayerObject = function(obj, id) {
-      id === 'player1' ? _playerOne = obj : _playerTwo = obj
-    }
-
-    const getPlayer = function() {
-      return [_playerOne, _playerTwo]
-    }
-
-    const start = function() {
-      fieldButtons.forEach( (button) => {
-        button.textContent = ''
-        button.removeAttribute('disabled')
-      })
-    }
-
-    const end = function() {
-      fieldButtons.forEach( (button) => {
-        button.setAttribute('disabled', '')
-        button.dataset.token = ''
-      })
-      gameBoard.forEach( (field) => field.setState(''))
-      winLines.forEach( (line) => {
-        Object.keys(line).forEach( (key) => (line[key] = ''))
-      })
-      moves = 9
-      isWon = false
-
-    }
-
-    const play = function() {
-        moves--
-        game.token = game.token === 'X' ? 'O' : 'X'
-        isWon = checkForWin()
-        if (moves === 0 || isWon) {
-          if (!isWon) {
-            console.log("It's a draw!")
-          } else {
-            console.log(isWon.player)
-          }
-          game.end()
+    on: function(eventName, fn) {
+      this.events[eventName] = this.events[eventName] || []
+      this.events[eventName].push(fn)
+    },
+    off: function(eventName, fn) {
+      for (let i = 0; i < this.events[eventName].length; i++) {
+        if(this.events[eventName][i] === fn) {
+          this.events[eventName].splice(i, 1)
+          break
         }
+      }
+    },
+    trigger: function(eventName, data) {
+      if (this.events[eventName]) {
+        this.events[eventName].forEach( fn => fn(data))
+      }
+    }
+  }
+
+  const settings = (() => {
+    const _player1 = player('player1', 'Incognito', 'X')
+    const _player2 = player('player2', 'Anonymous', 'O')
+    let _singlePlayer = false
+    let _aiLevel = '0'
+    let _aiMode = '1'
+    const startPlayer = [_player1, _player2]
+    const currentPlayer = [_player1, _player2]
+    const currentToken = [_player1.token, _player2.token]
+
+    const setSettings = function(obj) {
+      _player1.name = obj.player1 || _player1.name
+      _player2.name = obj.player2 || _player2.name
+      _singlePlayer = Object.hasOwnProperty.call(obj, 'singlePlayer') ? obj.singlePlayer : _singlePlayer
+      _aiLevel = obj.aiLevel || _aiLevel
+      _aiMode = obj.aiMode || _aiMode
+    }
+    const getPlayerNames = function() {
+      return { player1: _player1.name, player2: _player2.name }
+    }
+    const getPlayerScores = function() {
+      return { player1: _player1.score, player2: _player2.score }
     }
 
-    return { setSinglePlayer,
-             setGameLevel,
-             setMoveMode,
-             setPlayerObject,
-             getPlayer,
-             start,
-             end,
-             play,
-             token }
+    const getPlayerTokens = function() {
+      return { player1: _player1.token, player2: _player2.token }
+    }
+
+    return { setSettings, getPlayerNames, getPlayerScores, getPlayerTokens, startPlayer, currentPlayer, currentToken }
   })()
 
   const gameBoard = []
@@ -130,56 +98,16 @@ const ticTacToe = ( () => {
     }
   })(gameBoard)
 
-  // functions
-  function toggleSettings() {
-    settingsPanel.classList.toggle('open')
-    panelToggler.textContent =
-      settingsPanel.classList.contains('open') ? '\u25b2' : '\u25bc'
-  }
+  // Lets & Consts
+  const messages = { nextPlayer: ", it's your turn!",
+                     draw: "It's a draw!",
+                     winner: ', you won this round!',
+                     aiWins: "'DeepThought' has won this round"
+                   }
+  let moves = 9
+  let hasWinner = false
 
-  function togglePlayerMode() {
-    game.setSinglePlayer(!this.checked)
-    if (this.checked) {
-      inputNamePlayerTwo.removeAttribute('disabled')
-      difficultyLevel.setAttribute('disabled', '')
-      firstMoveMode.setAttribute('disabled', '')
-    } else {
-      inputNamePlayerTwo.setAttribute('disabled', '')
-      difficultyLevel.removeAttribute('disabled')
-      firstMoveMode.removeAttribute('disabled')
-    }
-  }
-
-  function changeLevel() {
-    game.setGameLevel(this.checked ? 1 : 0)
-  }
-
-  function changeMoveMode() {
-    game.setMoveMode(this.value)
-  }
-
-  function setPlayer() {
-    const pattern = /^[\w][- \w]*[\w]$/
-    const isValidName = pattern.test(this.value)
-    if (isValidName) {
-      game.setPlayerObject(player(this.value), this.id)
-    } else {
-      alert('Only letters, numbers, space, hyphen, underscore for your name please')
-    }
-  }
-
-  function setToken() {
-    gameBoard[this.value - 1].setState(game.token)
-    winLines.forEach( (line) => {
-      if(Object.hasOwnProperty.call(line, this.value)) {
-        line[this.value] = game.token
-      }
-    })
-    this.dataset.token = game.token
-    this.textContent = game.token
-    game.play()
-  }
-
+  // Objects
   const winLines = [ {1: '', 2: '', 3: ''},
                      {4: '', 5: '', 6: ''},
                      {7: '', 8: '', 9: ''},
@@ -190,15 +118,190 @@ const ticTacToe = ( () => {
                      {3: '', 5: '', 7: ''}
   ]
 
-  const checkForWin = function() {
-    for (let line, i = 0; i < winLines.length; i++) {
-      line = Object.getOwnPropertyNames(winLines[i])
-      if (line.every( prop => winLines[i][prop] === 'X') ||
-          line.every( prop => winLines[i][prop] === 'O')) {
-        return { line: winLines[i], player: Object.values(winLines[i])[0] }
+  // Functions
+  function toggleSettingsMenu() {
+    settingsPanel.classList.toggle('open')
+    const status = settingsPanel.classList.contains('open')
+    const arrow = status ? '\u25b2' : '\u25bc'
+    panelButton.textContent = arrow
+    events.trigger('menuToggle', status)
+  }
+
+  function pauseGame(bool) {
+    fieldButtons.forEach ( (button) => {
+      if (bool) {
+        button.setAttribute('disabled', '')
+      } else {
+        button.removeAttribute('disabled')
+      }
+    })
+  }
+
+  function togglePlayerMode() {
+    const mode = { singlePlayer: !this.checked }
+    if (this.checked) {
+      inputNamePlayerTwo.removeAttribute('disabled')
+      levelFieldset.setAttribute('disabled', '')
+      moveFieldset.setAttribute('disabled', '')
+      mode.player2 = 'Anonymous'
+    } else {
+      inputNamePlayerTwo.setAttribute('disabled', '')
+      levelFieldset.removeAttribute('disabled')
+      moveFieldset.removeAttribute('disabled')
+      mode.player2 = 'DeepThought'
+    }
+    events.trigger('settingsChange', mode)
+  }
+
+  function setPlayer() {
+    const pattern = /^[\w][- \w]*[\w]$/
+    const isValidName = pattern.test(this.value)
+    if (isValidName) {
+      events.trigger('settingsChange',  { [this.id]: this.value } )
+    } else {
+      modal('Only letters, numbers, space, hyphen, underscore for your name please!', '0.9rem')
+      this.value = ''
+    }
+  }
+
+  function changeLevel() {
+    events.trigger('settingsChange', { aiLevel: (this.checked ? '1' : '0') })
+  }
+
+  function changeMode() {
+    events.trigger('settingsChange', { aiMode: (this.value) })
+  }
+
+  function renderScoring() {
+    displayP1Name.textContent = settings.getPlayerNames().player1
+    displayP1Score.textContent = settings.getPlayerScores().player1
+    displayP2Name.textContent = settings.getPlayerNames().player2
+    displayP2Score.textContent = settings.getPlayerScores().player2
+  }
+
+  function renderMessage(message, playerName) {
+    displayMessage.textContent = playerName? playerName + message : message
+  }
+
+  function modal(string, fontsize, fn) {
+    document.documentElement.style.setProperty('--fontsize', fontsize)
+    modalButton.textContent = string
+    modalButton.addEventListener('click', function inModal() {
+      modalButton.textContent = ''
+      modalButton.classList.remove('show')
+      modalButton.removeEventListener('click', inModal)
+      if (fn) fn()
+    })
+    modalButton.classList.add('show')
+  }
+
+  function endRound() {
+    fieldButtons.forEach( (button) => {
+      button.setAttribute('disabled', '')
+      button.dataset.token = ''
+    })
+    modal('Next Round', '2.0rem', nextRound)
+  }
+
+  function nextRound() {
+    resetGameBoard()
+    fieldButtons.forEach( (button) => {
+      button.removeAttribute('disabled')
+    })
+    settings.startPlayer.push(settings.startPlayer.shift())
+    if (settings.currentPlayer[0] !== settings.startPlayer[0]) {
+      settings.currentPlayer.push(settings.currentPlayer.shift())
+    }
+    if (settings.currentToken[0] !== 'X') {
+      settings.currentToken.push(settings.currentToken.shift())
+    }
+    settings.currentPlayer[0].token = 'X'
+    settings.currentPlayer[1].token = 'O'
+    renderMessage(messages.nextPlayer, settings.startPlayer[0].name)
+  }
+
+  function resetGameBoard() {
+    gameBoard.forEach( (field) => field.setState(''))
+    winLines.forEach( (line) => {
+      Object.keys(line).forEach( (key) => (line[key] = ''))
+    })
+    fieldButtons.forEach( (button) => {
+      button.textContent = ''
+      button.dataset.token = ''
+    })
+    moves = 9
+    hasWinner = false
+  }
+
+  function resetStats() {
+    if (settings.startPlayer[0].name !== settings.getPlayerNames().player1.name) {
+      settings.startPlayer.push(settings.startPlayer.shift())
+    }
+    if (settings.currentPlayer[0] !== settings.startPlayer[0]) {
+      settings.currentPlayer.push(settings.currentPlayer.shift())
+    }
+    if (settings.currentToken[0] !== 'X') {
+      settings.currentToken.push(settings.currentToken.shift())
+    }
+    settings.currentPlayer[0].token = 'X'
+    settings.currentPlayer[1].token = 'O'
+    settings.currentPlayer[0].score = 0
+    settings.currentPlayer[1].score = 0
+  }
+
+  function play(event) {
+    const button = event.target
+    if (button.type && !gameBoard[button.value - 1].getState()) {
+      gameBoard[button.value - 1].setState(settings.currentToken[0])
+      winLines.forEach( (line) => {
+        if(Object.hasOwnProperty.call(line, button.value)) {
+          line[button.value] = settings.currentToken[0]
+        }
+      })
+      button.dataset.token = settings.currentToken[0]
+      button.textContent = settings.currentToken[0]
+      --moves
+      hasWinner = checkForWin()
+      if (moves === 0 || hasWinner) {
+        if (!hasWinner) {
+          renderMessage(messages.draw)
+        } else {
+          settings.currentPlayer[0].score++
+          renderMessage(messages.winner, settings.currentPlayer[0].name)
+        }
+        renderScoring()
+        endRound()
+      } else {
+        renderMessage(messages.nextPlayer, settings.currentPlayer[1].name)
+        settings.currentPlayer.push(settings.currentPlayer.shift())
+        settings.currentToken.push(settings.currentToken.shift())
       }
     }
   }
 
-  return { game }
+  function checkForWin() {
+    for (let line, i = 0; i < winLines.length; i++) {
+      line = Object.getOwnPropertyNames(winLines[i])
+      hasWinner = line.every( prop => winLines[i][prop] === 'X') ||
+                  line.every( prop => winLines[i][prop] === 'O')
+      if (hasWinner) return { line: winLines[i] }
+    }
+  }
+
+  // Event listening
+  panelButton.addEventListener('click', toggleSettingsMenu)
+  inputNumberOfPlayers.addEventListener('click', togglePlayerMode)
+  inputNamePlayerOne.addEventListener('change', setPlayer)
+  inputNamePlayerTwo.addEventListener('change', setPlayer)
+  inputLevel.addEventListener('change', changeLevel)
+  inputMove.forEach( (radio) => radio.addEventListener('change', changeMode))
+  gameField.addEventListener('click', play)
+  events.on('menuToggle', pauseGame)
+  events.on('settingsChange', settings.setSettings)
+  events.on('settingsChange', resetGameBoard)
+  events.on('settingsChange', resetStats)
+  events.on('settingsChange', renderScoring)
+
+  renderScoring()
+  renderMessage(messages.nextPlayer, settings.getPlayerNames().player1)
 })()
