@@ -2,8 +2,8 @@ const ticTacToe = ( () => {
   'use strict'
 
   // DOM access
-  const gameField = document.querySelector('#game-board')
-  const fieldButtons = gameField.querySelectorAll('#game-board button')
+  const boardFields = document.querySelector('#game-board')
+  const fieldButtons = boardFields.querySelectorAll('#game-board button')
   const settingsPanel = document.querySelector('nav')
   const panelButton = document.querySelector('#toggler')
   const inputNumberOfPlayers = document.querySelector('#number-players')
@@ -26,40 +26,7 @@ const ticTacToe = ( () => {
     return { id, name, token, score }
   }
 
-  const field = (number) => {
-    let _state = ''
-    function setState(state) {
-      _state = state
-    }
-    function getState() {
-      return _state
-    }
-    return { number, setState, getState }
-  }
-
   // Modules
-  const events = {
-    events: {},
-
-    on: function(eventName, fn) {
-      this.events[eventName] = this.events[eventName] || []
-      this.events[eventName].push(fn)
-    },
-    off: function(eventName, fn) {
-      for (let i = 0; i < this.events[eventName].length; i++) {
-        if(this.events[eventName][i] === fn) {
-          this.events[eventName].splice(i, 1)
-          break
-        }
-      }
-    },
-    trigger: function(eventName, data) {
-      if (this.events[eventName]) {
-        this.events[eventName].forEach( fn => fn(data))
-      }
-    }
-  }
-
   const settings = (() => {
     const _player1 = player('player1', 'Incognito', 'X')
     const _player2 = player('player2', 'Anonymous', 'O')
@@ -88,35 +55,37 @@ const ticTacToe = ( () => {
       return { player1: _player1.token, player2: _player2.token }
     }
 
-    return { setSettings, getPlayerNames, getPlayerScores, getPlayerTokens, startPlayer, currentPlayer, currentToken }
+    const getSinglePlayer = function() {
+      return _singlePlayer
+    }
+    return { setSettings, getPlayerNames, getPlayerScores, getPlayerTokens, getSinglePlayer, startPlayer, currentPlayer, currentToken }
   })()
 
-  const gameBoard = []
-  const createGameBoard = ((arr)=>{
-    for (let i = 1; i <= 9; i++) {
-      arr.push(field(i))
-    }
-  })(gameBoard)
-
   // Lets & Consts
+  const gameBoard = ['', '', '', '', '', '', '', '', '']
+  const winLines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
+  const swapToken = ['--xToken', '--oToken']
+  const buttons = [...fieldButtons]
+  let roundResult = -1
+  let isMaxster = false
+  let position = 0
+  let paused = false
+
+  // Objects
   const messages = { nextPlayer: ", it's your turn!",
                      draw: "It's a draw!",
                      winner: ', you won this round!',
                      aiWins: "'DeepThought' has won this round"
                    }
-  let moves = 9
-  let hasWinner = false
-
-  // Objects
-  const winLines = [ {1: '', 2: '', 3: ''},
-                     {4: '', 5: '', 6: ''},
-                     {7: '', 8: '', 9: ''},
-                     {1: '', 4: '', 7: ''},
-                     {2: '', 5: '', 8: ''},
-                     {3: '', 6: '', 9: ''},
-                     {1: '', 5: '', 9: ''},
-                     {3: '', 5: '', 7: ''}
-  ]
 
   // Functions
   function toggleSettingsMenu() {
@@ -124,10 +93,12 @@ const ticTacToe = ( () => {
     const status = settingsPanel.classList.contains('open')
     const arrow = status ? '\u25b2' : '\u25bc'
     panelButton.textContent = arrow
-    events.trigger('menuToggle', status)
+    pauseGame(status)
+    if (!paused && settings.getSinglePlayer()) startRound()
   }
 
   function pauseGame(bool) {
+    paused = bool
     fieldButtons.forEach ( (button) => {
       if (bool) {
         button.setAttribute('disabled', '')
@@ -150,14 +121,14 @@ const ticTacToe = ( () => {
       moveFieldset.removeAttribute('disabled')
       mode.player2 = 'DeepThought'
     }
-    events.trigger('settingsChange', mode)
+    settingsChange(mode)
   }
 
   function setPlayer() {
     const pattern = /^[\w][- \w]*[\w]$/
     const isValidName = pattern.test(this.value)
     if (isValidName) {
-      events.trigger('settingsChange',  { [this.id]: this.value } )
+      settingsChange( { [this.id]: this.value } )
     } else {
       modal('Only letters, numbers, space, hyphen, underscore for your name please!', '0.9rem')
       this.value = ''
@@ -165,11 +136,19 @@ const ticTacToe = ( () => {
   }
 
   function changeLevel() {
-    events.trigger('settingsChange', { aiLevel: (this.checked ? '1' : '0') })
+    settingsChange( { aiLevel: (this.checked ? '1' : '0') } )
   }
 
   function changeMode() {
-    events.trigger('settingsChange', { aiMode: (this.value) })
+    settingsChange( { aiMode: (this.value) } )
+  }
+
+  function settingsChange(data) {
+    settings.setSettings(data)
+    resetGameBoard()
+    resetStats()
+    renderScoring()
+    renderMessage(messages.nextPlayer, settings.startPlayer[0].name)
   }
 
   function renderScoring() {
@@ -195,16 +174,41 @@ const ticTacToe = ( () => {
     modalButton.classList.add('show')
   }
 
-  function endRound() {
+  function resetGameBoard() {
+    for (const field in gameBoard) gameBoard[field] = ''
     fieldButtons.forEach( (button) => {
-      button.setAttribute('disabled', '')
+      button.textContent = ''
       button.dataset.token = ''
     })
-    modal('Next Round', '2.0rem', nextRound)
+    roundResult = -1
+  }
+
+  function resetStats() {
+    if (settings.startPlayer[0].id !== 'player1') {
+      settings.startPlayer.push(settings.startPlayer.shift())
+    }
+    if (settings.currentPlayer[0] !== settings.startPlayer[0]) {
+      settings.currentPlayer.push(settings.currentPlayer.shift())
+    }
+    if (settings.currentToken[0] !== 'X') {
+      settings.currentToken.push(settings.currentToken.shift())
+    }
+    settings.currentPlayer[0].score = 0
+    settings.currentPlayer[1].score = 0
+  }
+
+  function startRound() {
+    if (settings.startPlayer[0].name !== 'DeepThought') return
+    isMaxster = settings.startPlayer[0].name === 'DeepThought'
+    buttons[aiTurn()].click()
   }
 
   function nextRound() {
     resetGameBoard()
+    if(swapToken[0] !== '--xToken') {
+      swapToken.push(swapToken.shift())
+      document.documentElement.style.setProperty('--token', `var(${swapToken[0]})`)
+    }
     fieldButtons.forEach( (button) => {
       button.removeAttribute('disabled')
     })
@@ -218,52 +222,27 @@ const ticTacToe = ( () => {
     settings.currentPlayer[0].token = 'X'
     settings.currentPlayer[1].token = 'O'
     renderMessage(messages.nextPlayer, settings.startPlayer[0].name)
+    if (settings.getSinglePlayer()) startRound()
   }
 
-  function resetGameBoard() {
-    gameBoard.forEach( (field) => field.setState(''))
-    winLines.forEach( (line) => {
-      Object.keys(line).forEach( (key) => (line[key] = ''))
-    })
+  function endRound() {
     fieldButtons.forEach( (button) => {
-      button.textContent = ''
+      button.setAttribute('disabled', '')
       button.dataset.token = ''
     })
-    moves = 9
-    hasWinner = false
-  }
-
-  function resetStats() {
-    if (settings.startPlayer[0].name !== settings.getPlayerNames().player1.name) {
-      settings.startPlayer.push(settings.startPlayer.shift())
-    }
-    if (settings.currentPlayer[0] !== settings.startPlayer[0]) {
-      settings.currentPlayer.push(settings.currentPlayer.shift())
-    }
-    if (settings.currentToken[0] !== 'X') {
-      settings.currentToken.push(settings.currentToken.shift())
-    }
-    settings.currentPlayer[0].token = 'X'
-    settings.currentPlayer[1].token = 'O'
-    settings.currentPlayer[0].score = 0
-    settings.currentPlayer[1].score = 0
+    isMaxster = !isMaxster
+    modal('Next Round', '2.0rem', nextRound)
   }
 
   function play(event) {
     const button = event.target
-    if (button.type && !gameBoard[button.value - 1].getState()) {
-      gameBoard[button.value - 1].setState(settings.currentToken[0])
-      winLines.forEach( (line) => {
-        if(Object.hasOwnProperty.call(line, button.value)) {
-          line[button.value] = settings.currentToken[0]
-        }
-      })
+    if (button.value && gameBoard[button.value] === '') {
+      gameBoard[button.value] = settings.currentToken[0]
       button.dataset.token = settings.currentToken[0]
       button.textContent = settings.currentToken[0]
-      --moves
-      hasWinner = checkForWin()
-      if (moves === 0 || hasWinner) {
-        if (!hasWinner) {
+      roundResult = evalTurn()
+      if (roundResult !== -1) {
+        if (roundResult === 1) {
           renderMessage(messages.draw)
         } else {
           settings.currentPlayer[0].score++
@@ -276,16 +255,53 @@ const ticTacToe = ( () => {
         settings.currentPlayer.push(settings.currentPlayer.shift())
         settings.currentToken.push(settings.currentToken.shift())
       }
+      swapToken.push(swapToken.shift())
+      document.documentElement.style.setProperty('--token', `var(${swapToken[0]})`)
     }
+    if (settings.currentPlayer[0].name === 'DeepThought') buttons[aiTurn()].click()
   }
 
-  function checkForWin() {
-    for (let line, i = 0; i < winLines.length; i++) {
-      line = Object.getOwnPropertyNames(winLines[i])
-      hasWinner = line.every( prop => winLines[i][prop] === 'X') ||
-                  line.every( prop => winLines[i][prop] === 'O')
-      if (hasWinner) return { line: winLines[i] }
+  function evalTurn() {
+    for (let i = 0; i < winLines.length; i++) {
+      if (winLines[i].every( key => gameBoard[key] === 'X')) return 2
+      if (winLines[i].every( key => gameBoard[key] === 'O')) return 0
     }
+    if (gameBoard.every( (field) => field !== '')) return 1
+    return -1
+  }
+
+  function aiTurn() {
+    const token = isMaxster ? 'X' : 'O'
+    let bestTurn = isMaxster ? -Infinity : Infinity
+    for (let i = 0; i < 9; i++) {
+      if (gameBoard[i] === '') {
+        gameBoard[i] = token
+        const newBest = minimax()
+        if ((isMaxster && (newBest > bestTurn)) || ((!isMaxster) && (newBest < bestTurn))) {
+          bestTurn = newBest
+          position = i
+        }
+        gameBoard[i] = ''
+      }
+    }
+    return position
+  }
+
+  function minimax() {
+    const result = evalTurn()
+    if (result !== -1) return result
+    isMaxster = !isMaxster
+    let bestMove = isMaxster ? -Infinity : Infinity
+    for (let i = 0; i < 9; i++) {
+      if (gameBoard[i] === '') {
+        gameBoard[i] = isMaxster ? 'X' : 'O'
+        const newBest = minimax()
+        bestMove = isMaxster ? Math.max(newBest, bestMove) : Math.min(newBest, bestMove)
+        gameBoard[i] = ''
+      }
+    }
+    isMaxster = !isMaxster
+    return bestMove
   }
 
   // Event listening
@@ -295,13 +311,9 @@ const ticTacToe = ( () => {
   inputNamePlayerTwo.addEventListener('change', setPlayer)
   inputLevel.addEventListener('change', changeLevel)
   inputMove.forEach( (radio) => radio.addEventListener('change', changeMode))
-  gameField.addEventListener('click', play)
-  events.on('menuToggle', pauseGame)
-  events.on('settingsChange', settings.setSettings)
-  events.on('settingsChange', resetGameBoard)
-  events.on('settingsChange', resetStats)
-  events.on('settingsChange', renderScoring)
+  boardFields.addEventListener('click', play)
 
   renderScoring()
   renderMessage(messages.nextPlayer, settings.getPlayerNames().player1)
+
 })()

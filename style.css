@@ -4,6 +4,9 @@
   --fontsize: 2.0rem;
   --svgfill: #7f004f;
   --svgstroke: #ff8faf;
+  --xToken: "X";
+  --oToken: "O";
+  --token: var(--xToken);
   --col00: #020214;
   --col01: #121224;
   --col02: #242448;
@@ -313,27 +316,33 @@ main {
   color: var(--col10);
 }
 #game-board {
+  background-color: var(--col00);
   justify-self: center;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
-  gap: 1.0rem
+  gap: 0.5rem
 }
 #game-board button {
   width: 8.0rem;
   height: 8.0rem;
   font-size: 6.0rem;
   background-color: var(--col02);
-  border: 5px inset var(--col03);
+  border: 3px outset var(--col03);
   cursor: pointer;
 }
 #game-board button:disabled {
   opacity: 0.25;
   cursor: default;
 }
-#game-board button:not([disabled]):hover {
+#game-board button:not([disabled]):not([data-token='X']):not([data-token='O']):hover {
   background-color: var(--col04);
 }
+#game-board button:not([disabled]):not([data-token='X']):not([data-token='O']):hover::before {
+  content: var(--token);
+  color: var(--col03);
+}
+
 #game-board button:not([disabled])[data-token='X'] {
   color: var(--col06);
   text-shadow: 3px 3px 2px var(--col08);
