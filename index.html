@@ -63,7 +63,7 @@
     </div>
   </header>
   <nav class="">
-    <form action="" id="players">
+    <form id="settings">
       <fieldset>
         <legend>Number Of Players</legend>
         <label for="number-players">1
@@ -84,34 +84,14 @@
                id="player2"
                maxlength="24">
       </fieldset>
-    </form>
-    <form action="" id="ai">
       <fieldset id="difficulty" disabled>
         <legend>Difficulty Level</legend>
         <input type="checkbox"
                id="level"
-               name="level">
+               name="level"
+               checked>
         <label for="level">Rainbow-Unicorn</label>
         <label for="level">NightMare</label>
-      </fieldset>
-      <fieldset id="mode" disabled>
-        <legend>1st Move</legend>
-        <input type="radio"
-               id="always"
-               name="first-move"
-               value="0">
-        <label for="always">Always</label>
-        <input type="radio"
-               id="alternate"
-               name="first-move"
-               value="1"
-               checked>
-        <label for="alternate">Alternate</label>
-        <input type="radio"
-               id="never"
-               name="first-move"
-               value="2">
-        <label for="never">Never</label>
       </fieldset>
     </form>
     <button id="toggler">&#x25bc;</button>
@@ -129,15 +109,15 @@
       <div id="message"></div>
     </section>
     <section id="game-board">
-      <button type="button" id="0" value="0" data-token=""></button>
-      <button type="button" id="1" value="1" data-token=""></button>
-      <button type="button" id="2" value="2" data-token=""></button>
-      <button type="button" id="3" value="3" data-token=""></button>
-      <button type="button" id="4" value="4" data-token=""></button>
-      <button type="button" id="5" value="5" data-token=""></button>
-      <button type="button" id="6" value="6" data-token=""></button>
-      <button type="button" id="7" value="7" data-token=""></button>
-      <button type="button" id="8" value="8" data-token=""></button>
+      <button type="button" value="0" data-token=""></button>
+      <button type="button" value="1" data-token=""></button>
+      <button type="button" value="2" data-token=""></button>
+      <button type="button" value="3" data-token=""></button>
+      <button type="button" value="4" data-token=""></button>
+      <button type="button" value="5" data-token=""></button>
+      <button type="button" value="6" data-token=""></button>
+      <button type="button" value="7" data-token=""></button>
+      <button type="button" value="8" data-token=""></button>
     </section>
     <button type="button" class="modal"></button>
   </main>

@@ -11,9 +11,7 @@ const ticTacToe = ( () => {
   const inputNamePlayerOne = document.querySelector('#player1')
   const inputNamePlayerTwo = document.querySelector('#player2')
   const levelFieldset = document.querySelector('#difficulty')
-  const moveFieldset = document.querySelector('#mode')
   const inputLevel = document.querySelector('#level')
-  const inputMove = document.querySelectorAll('#mode input')
   const displayP1Name = document.querySelector('.scoring.p1 .name')
   const displayP1Score = document.querySelector('.scoring.p1 .score')
   const displayP2Name = document.querySelector('.scoring.p2 .name')
@@ -27,28 +25,6 @@ const ticTacToe = ( () => {
     return { id, name, score }
   }
 
-  // Events Module
-  const toeEvent = {
-    events: {},
-    trigger: function(eventName, data) {
-               if (this.events[eventName]) {
-                this.events[eventName].forEach( (fn) => fn(data))
-               }
-             },
-    add: function(eventName, fn) {
-           this.events[eventName] = this.events[eventName] || []
-           this.events[eventName].push(fn)
-         },
-    remove: function(eventName, fn) {
-              for (let i = 0; i < this.events[eventName].length; i++) {
-                if (this.events[eventName][i] === fn) {
-                  this.events[eventName].splice(i, 1)
-                  break
-                }
-              }
-            }
-  }
-
   // Settings Module
   const settings = (() => {
     const _player1 = player('player1', 'Incognito')
@@ -57,15 +33,13 @@ const ticTacToe = ( () => {
     let _startPlayer = [_player1, _player2]
     let _currentPlayer = [_player1, _player2]
     let _singlePlayer = false
-    let _aiLevel = '0'
-    let _aiMode = '1'
+    let _aiLevel = '1'
 
     const change = function(obj) {
       _player1.name = obj.player1 || _player1.name
       _player2.name = obj.player2 || _player2.name
       _singlePlayer = Object.hasOwnProperty.call(obj, 'singlePlayer') ? obj.singlePlayer : _singlePlayer
       _aiLevel = obj.aiLevel || _aiLevel
-      _aiMode = obj.aiMode || _aiMode
       if (_singlePlayer) {
         _startPlayer = [_player1, _ai]
         _currentPlayer = [_player1, _ai]
@@ -73,6 +47,7 @@ const ticTacToe = ( () => {
         _startPlayer = [_player1, _player2]
         _currentPlayer = [_player1, _player2]
       }
+      changedSettings = true
     }
     const getNames = () => ({ player1: _player1.name, player2: _player2.name, ai: _ai.name })
     const getScores = () => ({ player1: _player1.score, player2: _player2.score, ai: _ai.score })
@@ -80,7 +55,6 @@ const ticTacToe = ( () => {
     const getStartPlayer = () => _startPlayer
     const getCurrentPlayer = () => _currentPlayer
     const getLevel = () => _aiLevel
-    const getMode = () => _aiMode
 
     return { change,
              getNames,
@@ -88,11 +62,10 @@ const ticTacToe = ( () => {
              getSinglePlayer,
              getStartPlayer,
              getCurrentPlayer,
-             getLevel,
-             getMode }
+             getLevel }
   })()
 
-  // NameSpace 'Global'
+  // 'NameSpace Globals'
   const gameBoard = ['', '', '', '', '', '', '', '', '']
   const buttons = [...fieldButtons]
   const currentToken = ['X', 'O']
@@ -107,112 +80,12 @@ const ticTacToe = ( () => {
   let currentPlayer = settings.getCurrentPlayer()
   let moveResult = -1
   let isMaximizer = false
+  let changedSettings = false
 
-  // Functions
-  function toggleSettingsMenu() {
-    settingsPanel.classList.toggle('open')
-    const status = settingsPanel.classList.contains('open')
-    const arrow = status ? '\u25b2' : '\u25bc'
-    panelButton.textContent = arrow
-    toeEvent.trigger('menuToggle', status)
-  }
+  renderScoring()
+  renderMessage(messages.nextPlayer, startPlayer[0].name)
 
-  function pauseGame(bool) {
-    fieldButtons.forEach ( (button) => {
-      if (bool) {
-        button.setAttribute('disabled', '')
-      } else {
-        button.removeAttribute('disabled')
-      }
-    })
-  }
-
-  function togglePlayerMode() {
-    const onePlayer = { singlePlayer: !this.checked }
-    if (this.checked) {
-      inputNamePlayerTwo.removeAttribute('disabled')
-      levelFieldset.setAttribute('disabled', '')
-      moveFieldset.setAttribute('disabled', '')
-    } else {
-      inputNamePlayerTwo.setAttribute('disabled', '')
-      levelFieldset.removeAttribute('disabled')
-      moveFieldset.removeAttribute('disabled')
-    }
-    toeEvent.trigger('settingsChange', onePlayer)
-  }
-
-  function setPlayerName() {
-    const pattern = /^[\w][- \w]*[\w]$/
-    const isValidName = pattern.test(this.value)
-    if (!(this.value === '') && !isValidName) {
-      toeEvent.trigger('errorName', ...[messages.errorName, '0.9rem'] )
-      this.value = ''
-    } else {
-      toeEvent.trigger('settingsChange', { [this.id]: this.value } )
-    }
-  }
-
-  function changeLevel() {
-    toeEvent.trigger('settingsChange', { aiLevel: (this.checked ? '1' : '0') } )
-  }
-
-  function changeMode() {
-    toeEvent.trigger('settingsChange', { aiMode: (this.value) } )
-  }
-
-  function renderScoring() {
-    displayP1Name.textContent = settings.getNames().player1
-    displayP1Score.textContent = settings.getScores().player1
-    displayP2Name.textContent = settings.getSinglePlayer() ? settings.getNames().ai : settings.getNames().player2
-    displayP2Score.textContent = settings.getSinglePlayer() ? settings.getScores().ai : settings.getScores().player2
-  }
-
-  function renderMessage(message, playerName) {
-    displayMessage.textContent = playerName ? playerName + message : message
-  }
-
-  function modal(string, fontsize, fn) {
-    document.documentElement.style.setProperty('--fontsize', fontsize)
-    modalButton.textContent = string
-    modalButton.addEventListener('click', function inModal() {
-      modalButton.textContent = ''
-      modalButton.classList.remove('show')
-      modalButton.removeEventListener('click', inModal)
-      if (fn) fn()
-    })
-    modalButton.classList.add('show')
-  }
-
-  function newGame() {
-    startPlayer = settings.getStartPlayer()
-    currentPlayer = settings.getCurrentPlayer()
-    resetGameBoard()
-    resetStats()
-    renderScoring()
-    renderMessage(messages.nextPlayer, startPlayer[0].name)
-  }
-
-  function startRound() {
-    if (startPlayer[0].id !== 'ai') return
-    isMaximizer = true
-    if (settings.getLevel() === '0') {
-      buttons[aiRandom()].click()
-    } else {
-      buttons[aiTurn()].click()
-    }
-  }
-
-  function roundResult() {
-    let result
-    if (moveResult === 1) {
-      result = [messages.draw]
-    } else {
-      currentPlayer[0].score++
-      result = currentPlayer[0].id === 'ai' ? [messages.aiWins] : [messages.winner, currentPlayer[0].name]
-    }
-    return result
-  }
-
+  // Functions Game Play
   function play(event) {
     const button = event.target
     if (!button.value || gameBoard[button.value] !== '') return
@@ -240,17 +113,15 @@ const ticTacToe = ( () => {
     }
   }
 
-  function nextRound() {
-    resetGameBoard()
-    fieldButtons.forEach( (button) => {
-      button.removeAttribute('disabled')
-    })
-    startPlayer.push(startPlayer.shift())
-    if (currentPlayer[0] !== startPlayer[0]) {
-      currentPlayer.push(currentPlayer.shift())
+  function roundResult() {
+    let result
+    if (moveResult === 1) {
+      result = [messages.draw]
+    } else {
+      currentPlayer[0].score++
+      result = currentPlayer[0].id === 'ai' ? [messages.aiWins] : [messages.winner, currentPlayer[0].name]
     }
-    renderMessage(messages.nextPlayer, startPlayer[0].name)
-    if (settings.getSinglePlayer()) startRound()
+    return result
   }
 
   function endRound() {
@@ -262,44 +133,30 @@ const ticTacToe = ( () => {
     modal('Next Round', '2.0rem', nextRound)
   }
 
-  function resetGameBoard() {
-    for (let i = 0; i < buttons.length; i++) {
-      buttons[i].textContent = ''
-      buttons[i].dataset.token = ''
-      gameBoard[i] = ''
-    }
-    if(currentToken[0] !== 'X') {
-      currentToken.push(currentToken.shift())
-    }
-    if(swapToken[0] !== '--xToken') {
-      swapToken.push(swapToken.shift())
-      document.documentElement.style.setProperty('--token', `var(${swapToken[0]})`)
-    }
-    moveResult = -1
-  }
-
-  function resetStats() {
-    if (startPlayer[0].id !== 'player1') {
-      startPlayer.push(startPlayer.shift())
-    }
-    if (currentPlayer[0].id !== 'player1') {
+  function nextRound() {
+    resetGameBoard()
+    fieldButtons.forEach( (button) => {
+      button.removeAttribute('disabled')
+    })
+    startPlayer.push(startPlayer.shift())
+    if (currentPlayer[0] !== startPlayer[0]) {
       currentPlayer.push(currentPlayer.shift())
     }
-    currentPlayer[0].score = 0
-    currentPlayer[1].score = 0
-    isMaximizer = false
+    renderMessage(messages.nextPlayer, startPlayer[0].name)
+    if (settings.getSinglePlayer()) aiStart()
   }
 
-  // if you want to beat the AI...
-  function aiRandom() {
-    let rndMove
-    do {
-      rndMove = Math.floor(Math.random() * 9)
-    } while (gameBoard[rndMove] !== '');
-    return rndMove
+  function aiStart() {
+    if (startPlayer[0].id !== 'ai') return
+    isMaximizer = true
+    if (settings.getLevel() === '0') {
+      buttons[aiRandom()].click()
+    } else {
+      buttons[aiTurn()].click()
+    }
   }
 
-  // check the board for winner/tie - also used by minimax
+  // Check The Board For Winner/Tie - Also Used By Minimax
   const evalTurn = (() => {
     const winLines = [
       [0, 1, 2],
@@ -321,7 +178,7 @@ const ticTacToe = ( () => {
     }
   })()
 
-  // The Minimax-Algorithm, provides the next best AI-Move
+  // The Minimax-Algorithm, provides the next best AI move
   function aiTurn() {
     const token = isMaximizer ? 'X' : 'O'
     let bestTurn = isMaximizer ? -Infinity : Infinity
@@ -357,22 +214,130 @@ const ticTacToe = ( () => {
     return bestMove
   }
 
-  // Event listening
+  // if you want to beat the AI...
+  function aiRandom() {
+    let rndMove
+    do {
+      rndMove = Math.floor(Math.random() * 9)
+    } while (gameBoard[rndMove] !== '');
+    return rndMove
+  }
+
+  // Functions Reset & Restart
+  function newGame() {
+    startPlayer = settings.getStartPlayer()
+    currentPlayer = settings.getCurrentPlayer()
+    resetGameBoard()
+    resetStats()
+    renderScoring()
+    renderMessage(messages.nextPlayer, startPlayer[0].name)
+  }
+
+  function resetGameBoard() {
+    for (let i = 0; i < buttons.length; i++) {
+      buttons[i].textContent = ''
+      buttons[i].dataset.token = ''
+      gameBoard[i] = ''
+    }
+    if(currentToken[0] !== 'X') {
+      currentToken.push(currentToken.shift())
+    }
+    if(swapToken[0] !== '--xToken') {
+      swapToken.push(swapToken.shift())
+      document.documentElement.style.setProperty('--token', `var(${swapToken[0]})`)
+    }
+    moveResult = -1
+  }
+
+  function resetStats() {
+    if (startPlayer[0].id !== 'player1') {
+      startPlayer.push(startPlayer.shift())
+    }
+    if (currentPlayer[0].id !== 'player1') {
+      currentPlayer.push(currentPlayer.shift())
+    }
+    currentPlayer[0].score = 0
+    currentPlayer[1].score = 0
+    isMaximizer = false
+  }
+
+  // Functions UI Display
+  function renderScoring() {
+    displayP1Name.textContent = settings.getNames().player1
+    displayP1Score.textContent = settings.getScores().player1
+    displayP2Name.textContent = settings.getSinglePlayer() ? settings.getNames().ai : settings.getNames().player2
+    displayP2Score.textContent = settings.getSinglePlayer() ? settings.getScores().ai : settings.getScores().player2
+  }
+
+  function renderMessage(message, playerName) {
+    displayMessage.textContent = playerName ? playerName + message : message
+  }
+
+  function modal(string, fontsize, fn) {
+    document.documentElement.style.setProperty('--fontsize', fontsize)
+    modalButton.textContent = string
+    modalButton.addEventListener('click', function inModal() {
+      modalButton.textContent = ''
+      modalButton.classList.remove('show')
+      modalButton.removeEventListener('click', inModal)
+      if (fn) fn()
+    })
+    modalButton.classList.add('show')
+  }
+
+  // Functions Game Settings
+  function toggleSettingsMenu() {
+    settingsPanel.classList.toggle('open')
+    const status = settingsPanel.classList.contains('open')
+    const arrow = status ? '\u25b2' : '\u25bc'
+    panelButton.textContent = arrow
+    fieldButtons.forEach ( (button) => {
+      if (status) {
+        button.setAttribute('disabled', '')
+      } else {
+        button.removeAttribute('disabled')
+      }
+    })
+    if((!status) && changedSettings) {
+      changedSettings = false
+      newGame()
+    }
+  }
+
+  function togglePlayerMode() {
+    const onePlayer = { singlePlayer: !this.checked }
+    if (this.checked) {
+      inputNamePlayerTwo.removeAttribute('disabled')
+      levelFieldset.setAttribute('disabled', '')
+    } else {
+      inputNamePlayerTwo.setAttribute('disabled', '')
+      levelFieldset.removeAttribute('disabled')
+    }
+    settings.change(onePlayer)
+  }
+
+  function setPlayerName() {
+    const pattern = /^[\w][- \w]*[\w]$/
+    const isValidName = pattern.test(this.value)
+    if (!(this.value === '') && !isValidName) {
+      modal(...[messages.errorName, '0.9rem'])
+      this.value = ''
+    } else {
+      settings.change({ [this.id]: this.value })
+    }
+  }
+
+  function changeLevel() {
+    settings.change({ aiLevel: (this.checked ? '1' : '0') })
+  }
+
+  // Event Listening
   panelButton.addEventListener('click', toggleSettingsMenu)
   heading.addEventListener('click', toggleSettingsMenu)
   inputNumberOfPlayers.addEventListener('click', togglePlayerMode)
   inputNamePlayerOne.addEventListener('change', setPlayerName)
   inputNamePlayerTwo.addEventListener('change', setPlayerName)
   inputLevel.addEventListener('change', changeLevel)
-  inputMove.forEach( (radio) => radio.addEventListener('change', changeMode))
   boardFields.addEventListener('click', play)
-  toeEvent.add('menuToggle', pauseGame)
-  toeEvent.add('settingsChange', settings.change)
-  toeEvent.add('settingsChange', newGame)
-  toeEvent.add('errorName', modal)
 
-  renderScoring()
-  renderMessage(messages.nextPlayer, startPlayer[0].name)
-
-  return { settings, aiRandom }
 })()
