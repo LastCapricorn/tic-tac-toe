@@ -67,6 +67,7 @@ svg {
   margin: 0 auto;
   width: 39.45rem;
   height: 8.35rem;
+  cursor: pointer;
 }
 
 nav {
@@ -431,5 +432,13 @@ footer a:hover {
 @media screen and (max-width: 509px) {
   svg {
     font-size: 50%;
+  }
+  #scoring {
+    font-size: 1.3rem;
+  }
+  #game-board button {
+    width: 7.0rem;
+    height: 7.0rem;
+    font-size: 5.0rem;
   }
 }
